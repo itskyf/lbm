@@ -323,13 +323,13 @@ class LBMTransformerLayer(nn.Module):
         q_lattice = q_lattice + self.lattice_ffn(q_lattice)
         q_lattice = self.lattice_norm2(q_lattice)
 
-        q_lattice = rearrange(q_lattice, 'b (n k) c -> b n k c', n=n, k=n_topk)
+        q_lattice = q_lattice.view(b, n, -1, c)
         reference_rho = self.reference_rho(q_lattice).squeeze(-1) # b n k
 
         # lattice update
         random_mask = torch.rand(b*n, n_topk, device=device) < random_mask_ratio
         q_streaming = rearrange(q_streaming, 'b n c -> (b n) 1 c')
-        q_lattice = rearrange(q_lattice, 'b n k c -> (b n) k c')
+        q_lattice = q_lattice.reshape(b*n, -1, c)
         attn_output, _ = self.lattice_update(q_streaming, q_lattice, q_lattice, need_weights=False)
         q_streaming = q_streaming + self.lattice_update_dropout(attn_output)
         q_streaming = self.lattice_update_norm(q_streaming)

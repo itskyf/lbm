@@ -143,13 +143,13 @@ class LBM_online(LBM):
         self.collision_dist = torch.cat([self.collision_dist[:, :, 1:], memory['collision'].unsqueeze(2)], dim=2) # b n m c
         self.stream_dist = torch.cat([self.stream_dist[:, :, 1:], memory['stream'].unsqueeze(2)], dim=2) # b n m c
         self.mem_mask = torch.cat([self.mem_mask[:, :, 1:], ~queried_now_or_before.unsqueeze(-1)], dim=2) # b n m                          
-        self.vis_mask = torch.cat([self.vis_mask[:, :, 1:], (F.sigmoid(vis) < self.visibility_treshold).unsqueeze(-1)], dim=2) # b n m
+        self.vis_mask = torch.cat([self.vis_mask[:, :, 1:], (F.sigmoid(vis) < self.visibility_threshold).unsqueeze(-1)], dim=2) # b n m
 
         self.t += 1
 
         ref_tracks = out_t[-1]['reference_points'].squeeze(-2, -4) # n 2
         coord_pred = ref_tracks + offset[0] # n 2
-        vis_pred = F.sigmoid(vis)[0] > self.visibility_treshold
+        vis_pred = F.sigmoid(vis)[0] > self.visibility_threshold
         rho_pred = F.sigmoid(rho)[0]
 
         coord_pred[:, 1] = (coord_pred[:, 1] / self.size[0]) * H
@@ -333,7 +333,6 @@ class LBM_export(LBM):
             vis_mask=vis_mask.clone(), 
             mem_mask=mem_mask.clone(), 
             queried_now_or_before=queried_now_or_before,
-            last_pos=last_pos,
         )
 
         # update memory

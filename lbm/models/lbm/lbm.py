@@ -14,7 +14,7 @@ class LBM(nn.Module):
 
         self.N = args.N # number of queries
         self.T = args.T # number of frames
-        self.visibility_treshold = 0.8
+        self.visibility_threshold = 0.8
 
         self.size = args.input_size
         self.stride = args.stride
@@ -159,7 +159,7 @@ class LBM(nn.Module):
             collision_dist = torch.cat([collision_dist[:, :, 1:], memory['collision'].unsqueeze(2)], dim=2) # b n m c
             stream_dist = torch.cat([stream_dist[:, :, 1:], memory['stream'].unsqueeze(2)], dim=2) # b n m c
             mem_mask = torch.cat([mem_mask[:, :, 1:], ~queried_now_or_before.unsqueeze(-1)], dim=2) # b n m                          
-            vis_mask = torch.cat([vis_mask[:, :, 1:], (F.sigmoid(vis) < self.visibility_treshold).unsqueeze(-1)], dim=2) # b n m
+            vis_mask = torch.cat([vis_mask[:, :, 1:], (F.sigmoid(vis) < self.visibility_threshold).unsqueeze(-1)], dim=2) # b n m
         
             offsets.append(offset)
             visibility.append(vis)
@@ -204,7 +204,7 @@ class LBM(nn.Module):
         pred_tracks[..., 0] = (pred_tracks[..., 0] / self.size[1]) * W
         pred_tracks[..., 1] = (pred_tracks[..., 1] / self.size[0]) * H
         out['points'] = pred_tracks
-        out["visibility"] = F.sigmoid(visibility) > self.visibility_treshold
+        out["visibility"] = F.sigmoid(visibility) > self.visibility_threshold
 
         return out
 
@@ -256,7 +256,7 @@ class LBM(nn.Module):
             collision_dist = torch.cat([collision_dist[:, :, 1:], memory['collision'].unsqueeze(2)], dim=2) # b n m c
             stream_dist = torch.cat([stream_dist[:, :, 1:], memory['stream'].unsqueeze(2)], dim=2) # b n m c
             mem_mask = torch.cat([mem_mask[:, :, 1:], ~queried_now_or_before.unsqueeze(-1)], dim=2) # b n m                          
-            vis_mask = torch.cat([vis_mask[:, :, 1:], (F.sigmoid(vis) < self.visibility_treshold).unsqueeze(-1)], dim=2) # b n m
+            vis_mask = torch.cat([vis_mask[:, :, 1:], (F.sigmoid(vis) < self.visibility_threshold).unsqueeze(-1)], dim=2) # b n m
 
             ref_pts = out_t[-1]['reference_points'].squeeze(-2) # b n 2
             pred_tracks = ref_pts + offset # b n 2
@@ -275,6 +275,6 @@ class LBM(nn.Module):
         coord_pred[:, :, :, 0] = (coord_pred[:, :, :, 0] / self.size[1]) * W
 
         out["points"] = coord_pred
-        out["visibility"] = F.sigmoid(vis_pred) > self.visibility_treshold
+        out["visibility"] = F.sigmoid(vis_pred) > self.visibility_threshold
 
         return out
